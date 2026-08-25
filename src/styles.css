@@ -62,9 +62,13 @@
   --color-folder: var(--folder);
   --color-folder-back: var(--folder-back);
   --color-paper: var(--paper);
+  --color-tab-1: var(--tab-1);
+  --color-tab-2: var(--tab-2);
   --shadow-folder: var(--shadow-folder);
+  --shadow-folder-front: var(--shadow-folder-front);
   --shadow-paper: var(--shadow-paper);
 }
+
 
 :root {
   --radius: 0.875rem;
