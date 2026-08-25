@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { ChevronDown, LayoutGrid, Heart, Plus } from "lucide-react";
+import folderImg from "@/assets/folder.png";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -44,19 +46,21 @@ const filters = ["Todos", "Comprados", "Pendentes"] as const;
 function Folder({ item }: { item: Item }) {
   return (
     <button className="group flex flex-col items-center gap-3">
-      <div className="relative aspect-[5/4] w-full">
-        {/* back tab */}
-        <div className="absolute left-0 top-0 h-[26%] w-[52%] rounded-t-2xl bg-folder-back" />
-        {/* papers */}
-        <div className="absolute inset-x-[12%] top-[14%] h-[62%] rotate-[-4deg] rounded-lg bg-paper shadow-paper" />
-        <div className="absolute inset-x-[14%] top-[11%] h-[64%] rotate-[3deg] rounded-lg bg-paper shadow-paper" />
-        {/* front */}
-        <div className="absolute inset-x-0 bottom-0 top-[20%] rounded-2xl bg-folder shadow-folder transition-transform duration-300 group-hover:-translate-y-1">
-          <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-3xl drop-shadow-sm">
-            {item.emoji}
-          </span>
-        </div>
+      <div className="relative mx-auto aspect-square w-full">
+        <img
+          src={folderImg}
+          alt=""
+          loading="lazy"
+          width={1024}
+          height={1024}
+          className="h-full w-full select-none object-contain transition-transform duration-300 group-hover:-translate-y-1"
+        />
+        <span className="pointer-events-none absolute inset-x-0 top-[62%] -translate-y-1/2 text-center text-[2.1rem] leading-none drop-shadow-md">
+          {item.emoji}
+        </span>
       </div>
+
+
       <div className="flex items-center gap-2">
         <span className="text-sm font-semibold text-foreground">{item.name}</span>
         <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
@@ -66,6 +70,7 @@ function Folder({ item }: { item: Item }) {
     </button>
   );
 }
+
 
 function Index() {
   const [active, setActive] = useState<(typeof filters)[number]>("Todos");
