@@ -44,23 +44,20 @@ const filters = ["Todos", "Comprados", "Pendentes"] as const;
 function Folder({ item }: { item: Item }) {
   return (
     <button className="group flex flex-col items-center gap-3">
-      <div className="relative mx-auto aspect-square w-[86%]">
-        {/* back panel */}
-        <div className="absolute inset-x-0 bottom-0 top-[14%] rounded-[16%] bg-folder-back shadow-folder" />
-        {/* papers */}
-        <div className="absolute left-[10%] right-[26%] top-[10%] h-[48%] -rotate-[7deg] rounded-[8px] bg-paper shadow-paper" />
-        <div className="absolute left-[13%] right-[13%] top-[6%] h-[50%] rounded-[8px] bg-paper shadow-paper" />
-        <div className="absolute left-[26%] right-[8%] top-[9%] h-[48%] rotate-[7deg] rounded-[8px] bg-paper shadow-paper">
-          <div className="absolute right-[12%] top-[14%] h-[22%] w-[9%] rounded-[2px] bg-tab-1" />
-          <div className="absolute right-[12%] top-[42%] h-[22%] w-[9%] rounded-[2px] bg-tab-2" />
-        </div>
-        {/* front panel */}
-        <div className="absolute inset-x-0 bottom-0 top-[38%] rounded-[15%] bg-folder-front shadow-folder-front transition-transform duration-300 group-hover:-translate-y-1">
-          <span className="absolute inset-x-0 top-1/2 -translate-y-1/2 text-center text-[1.9rem] leading-none drop-shadow-md">
-            {item.emoji}
-          </span>
-        </div>
+      <div className="relative mx-auto aspect-square w-full">
+        <img
+          src={folderImg}
+          alt=""
+          loading="lazy"
+          width={1024}
+          height={1024}
+          className="h-full w-full select-none object-contain transition-transform duration-300 group-hover:-translate-y-1"
+        />
+        <span className="pointer-events-none absolute inset-x-0 top-[62%] -translate-y-1/2 text-center text-[2.1rem] leading-none drop-shadow-md">
+          {item.emoji}
+        </span>
       </div>
+
 
       <div className="flex items-center gap-2">
         <span className="text-sm font-semibold text-foreground">{item.name}</span>
