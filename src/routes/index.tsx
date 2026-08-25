@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { ChevronDown, LayoutGrid, Heart, Plus } from "lucide-react";
+import folderImg from "@/assets/folder.png";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
