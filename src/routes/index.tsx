@@ -63,7 +63,7 @@ function Folder({ item, calibration, preview = false }: { item: Item; calibratio
   const Icon = item.icon;
   const materialDelta = calibration.material - 50;
   return (
-    <div className={`flex flex-col items-center ${preview ? "gap-1" : "gap-1.5"}`}>
+    <div className={`flex flex-col items-center ${preview ? "w-full max-w-64 gap-1" : "gap-1.5"}`}>
       <div className="folder-stage relative mx-auto aspect-square w-full">
         <img
           src={folderImg}
@@ -121,16 +121,16 @@ function Index() {
           <span className="calibration-label rounded border border-border bg-muted px-2 py-1">v3.0.4</span>
         </header>
 
-        <section aria-label="Comparação visual" className="grid gap-px bg-border sm:grid-cols-2">
-          <figure className="bg-card p-4 sm:p-5">
+        <section aria-label="Comparação visual" className="grid grid-cols-2 gap-px bg-border">
+          <figure className="min-w-0 bg-card p-2 sm:p-5">
             <figcaption className="calibration-label mb-3">00. Referência</figcaption>
             <div className="comparison-viewport">
-              <img src={referenceImg} alt="Referência original das pastas" className="h-full w-full object-cover object-top" />
+              <img src={referenceImg} alt="Referência original das pastas" className="h-full w-full object-cover object-center" />
             </div>
           </figure>
-          <figure className="bg-card p-4 sm:p-5">
+          <figure className="min-w-0 bg-card p-2 sm:p-5">
             <figcaption className="calibration-label mb-3 text-foreground">01. Resultado atual</figcaption>
-            <div className="comparison-viewport bg-calibration-surface p-5 sm:p-8">
+            <div className="comparison-viewport bg-calibration-surface p-2 sm:p-8">
               <Folder item={previewItem} calibration={calibration} preview />
             </div>
           </figure>

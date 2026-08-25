@@ -185,7 +185,7 @@
 @utility comparison-viewport {
   display: grid;
   place-items: center;
-  aspect-ratio: 1 / 0.72;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
