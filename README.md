@@ -1,26 +1,32 @@
-# Wishlist Buddy
+# Wishlist
 
-quero um site igual a esse para wishlist
+Organize seus desejos em listas: presentes, viagens, tecnologia e mais.
+Marque o que já comprou e acompanhe o que falta. Funciona como PWA — pode
+ser instalado na tela inicial do celular.
 
-This project was built with [Lovable](https://lovable.dev).
+## Stack
 
-**Live app**: https://dream-wish-box.lovable.app
+- [TanStack Start](https://tanstack.com/start) (React, com SSR) + [Vite](https://vite.dev)
+- [Tailwind CSS](https://tailwindcss.com) + [Radix UI](https://www.radix-ui.com)
+- [Nitro](https://nitro.build) para o build do servidor
 
-## Build with Lovable
+## Desenvolvimento
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/7662ef82-35d6-413d-97b2-a2bbd89c1409).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Requer Node.js (ou [Bun](https://bun.sh)).
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+npm i      # ou: bun install
 npm run dev
 ```
+
+O app sobe em `http://localhost:8080`.
+
+## Build
+
+```sh
+npm run build
+npm run preview
+```
+
+`npm run build` gera um bundle SSR via Nitro em `dist/`, que pode ser hospedado
+em qualquer plataforma Node (Vercel, Netlify, Railway, um servidor próprio, etc.).
