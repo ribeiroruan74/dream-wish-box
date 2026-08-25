@@ -44,15 +44,19 @@ const filters = ["Todos", "Comprados", "Pendentes"] as const;
 function Folder({ item }: { item: Item }) {
   return (
     <button className="group flex flex-col items-center gap-3">
-      <div className="relative aspect-[5/4] w-full">
-        {/* back tab */}
-        <div className="absolute left-0 top-0 h-[26%] w-[52%] rounded-t-2xl bg-folder-back" />
+      <div className="relative aspect-square w-full">
+        {/* back panel */}
+        <div className="absolute inset-x-0 bottom-0 top-[10%] rounded-[18%] bg-folder-back shadow-folder" />
         {/* papers */}
-        <div className="absolute inset-x-[12%] top-[14%] h-[62%] rotate-[-4deg] rounded-lg bg-paper shadow-paper" />
-        <div className="absolute inset-x-[14%] top-[11%] h-[64%] rotate-[3deg] rounded-lg bg-paper shadow-paper" />
-        {/* front */}
-        <div className="absolute inset-x-0 bottom-0 top-[20%] rounded-2xl bg-folder shadow-folder transition-transform duration-300 group-hover:-translate-y-1">
-          <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-3xl drop-shadow-sm">
+        <div className="absolute left-[16%] right-[22%] top-[3%] h-[52%] -rotate-[5deg] rounded-[10px] bg-paper shadow-paper" />
+        <div className="absolute left-[24%] right-[14%] top-[2%] rotate-[4deg] h-[52%] rounded-[10px] bg-paper shadow-paper">
+          <div className="absolute right-[14%] top-[16%] h-[26%] w-[10%] rounded-sm bg-tab-1" />
+          <div className="absolute right-[14%] top-[48%] h-[26%] w-[10%] rounded-sm bg-tab-2" />
+        </div>
+        <div className="absolute left-[20%] right-[20%] top-[5%] h-[50%] rounded-[10px] bg-paper shadow-paper" />
+        {/* front panel */}
+        <div className="absolute inset-x-0 bottom-0 top-[34%] rounded-[16%] bg-folder-front shadow-folder-front transition-transform duration-300 group-hover:-translate-y-1">
+          <span className="absolute inset-x-0 top-[30%] text-center text-[2rem] leading-none drop-shadow-sm">
             {item.emoji}
           </span>
         </div>
@@ -66,6 +70,7 @@ function Folder({ item }: { item: Item }) {
     </button>
   );
 }
+
 
 function Index() {
   const [active, setActive] = useState<(typeof filters)[number]>("Todos");
