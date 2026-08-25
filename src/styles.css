@@ -60,16 +60,12 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-paper: var(--paper);
-  --color-calibration-surface: var(--calibration-surface);
-  --color-calibration-panel: var(--calibration-panel);
-  --color-calibration-icon: var(--calibration-icon);
 
   --color-tab-1: var(--tab-1);
   --color-tab-2: var(--tab-2);
   --shadow-folder: var(--shadow-folder);
   --shadow-folder-front: var(--shadow-folder-front);
   --shadow-paper: var(--shadow-paper);
-  --shadow-calibration: var(--shadow-calibration);
 }
 
 
@@ -103,11 +99,6 @@
   --shadow-folder-front:
     0 14px 22px -10px oklch(0.2 0.02 260 / 0.55), inset 0 1px 0 oklch(1 0 0 / 0.28);
   --shadow-paper: 0 4px 10px -6px oklch(0.2 0.02 260 / 0.4);
-  --calibration-surface: oklch(0.945 0 0);
-  --calibration-panel: oklch(0.985 0 0);
-  --calibration-icon: oklch(0.12 0 0);
-  --calibration-shadow: oklch(0.12 0 0);
-  --shadow-calibration: 0 24px 60px -36px oklch(0.12 0 0 / 0.42);
 
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -168,35 +159,7 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
   }
-}
-
-@utility calibration-label {
-  font-family: ui-monospace, "SFMono-Regular", monospace;
-  font-size: 0.625rem;
-  font-weight: 600;
-  line-height: 1rem;
-  letter-spacing: 0;
-  text-transform: uppercase;
-  color: var(--color-muted-foreground);
-}
-
-@utility comparison-viewport {
-  display: grid;
-  place-items: center;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-}
-
-.folder-render {
-  transition: filter 160ms ease, opacity 160ms ease;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .folder-render { transition: none; }
 }
 
 @utility bg-folder-back {
