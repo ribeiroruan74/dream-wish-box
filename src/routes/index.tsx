@@ -44,23 +44,24 @@ const filters = ["Todos", "Comprados", "Pendentes"] as const;
 function Folder({ item }: { item: Item }) {
   return (
     <button className="group flex flex-col items-center gap-3">
-      <div className="relative aspect-square w-full">
+      <div className="relative mx-auto aspect-square w-[86%]">
         {/* back panel */}
-        <div className="absolute inset-x-0 bottom-0 top-[10%] rounded-[18%] bg-folder-back shadow-folder" />
+        <div className="absolute inset-x-0 bottom-0 top-[14%] rounded-[16%] bg-folder-back shadow-folder" />
         {/* papers */}
-        <div className="absolute left-[16%] right-[22%] top-[3%] h-[52%] -rotate-[5deg] rounded-[10px] bg-paper shadow-paper" />
-        <div className="absolute left-[24%] right-[14%] top-[2%] rotate-[4deg] h-[52%] rounded-[10px] bg-paper shadow-paper">
-          <div className="absolute right-[14%] top-[16%] h-[26%] w-[10%] rounded-sm bg-tab-1" />
-          <div className="absolute right-[14%] top-[48%] h-[26%] w-[10%] rounded-sm bg-tab-2" />
+        <div className="absolute left-[10%] right-[26%] top-[10%] h-[48%] -rotate-[7deg] rounded-[8px] bg-paper shadow-paper" />
+        <div className="absolute left-[13%] right-[13%] top-[6%] h-[50%] rounded-[8px] bg-paper shadow-paper" />
+        <div className="absolute left-[26%] right-[8%] top-[9%] h-[48%] rotate-[7deg] rounded-[8px] bg-paper shadow-paper">
+          <div className="absolute right-[12%] top-[14%] h-[22%] w-[9%] rounded-[2px] bg-tab-1" />
+          <div className="absolute right-[12%] top-[42%] h-[22%] w-[9%] rounded-[2px] bg-tab-2" />
         </div>
-        <div className="absolute left-[20%] right-[20%] top-[5%] h-[50%] rounded-[10px] bg-paper shadow-paper" />
         {/* front panel */}
-        <div className="absolute inset-x-0 bottom-0 top-[34%] rounded-[16%] bg-folder-front shadow-folder-front transition-transform duration-300 group-hover:-translate-y-1">
-          <span className="absolute inset-x-0 top-[30%] text-center text-[2rem] leading-none drop-shadow-sm">
+        <div className="absolute inset-x-0 bottom-0 top-[38%] rounded-[15%] bg-folder-front shadow-folder-front transition-transform duration-300 group-hover:-translate-y-1">
+          <span className="absolute inset-x-0 top-1/2 -translate-y-1/2 text-center text-[1.9rem] leading-none drop-shadow-md">
             {item.emoji}
           </span>
         </div>
       </div>
+
       <div className="flex items-center gap-2">
         <span className="text-sm font-semibold text-foreground">{item.name}</span>
         <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
