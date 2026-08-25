@@ -96,6 +96,9 @@ function Index() {
   const [active, setActive] = useState<(typeof filters)[number]>("Todos");
   const defaults: Calibration = { opacity: 100, material: 50, shadow: 38 };
   const [calibration, setCalibration] = useState<Calibration>(defaults);
+  const previewItem = items[0];
+
+  if (!previewItem) return null;
 
   const visible = items.filter((i) =>
     active === "Todos"
@@ -128,7 +131,7 @@ function Index() {
           <figure className="bg-card p-4 sm:p-5">
             <figcaption className="calibration-label mb-3 text-foreground">01. Resultado atual</figcaption>
             <div className="comparison-viewport bg-calibration-surface p-5 sm:p-8">
-              <Folder item={items[0]} calibration={calibration} preview />
+              <Folder item={previewItem} calibration={calibration} preview />
             </div>
           </figure>
         </section>
