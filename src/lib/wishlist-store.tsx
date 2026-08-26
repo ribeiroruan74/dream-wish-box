@@ -7,6 +7,7 @@ export type Item = {
   imageUrl: string | undefined;
   emoji: string | undefined;
   url: string | undefined;
+  note: string | undefined;
   purchased: boolean;
 };
 
@@ -27,6 +28,7 @@ export type NewItemInput = {
   imageUrl: string | undefined;
   emoji: string | undefined;
   url: string | undefined;
+  note: string | undefined;
 };
 
 const STORAGE_KEY = "wishlist-lists-v2";
@@ -61,6 +63,7 @@ function seedLists(): WishlistList[] {
       imageUrl: undefined,
       emoji: undefined,
       url: undefined,
+      note: undefined,
       purchased,
     })),
   });
@@ -198,6 +201,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
                   imageUrl: input.imageUrl,
                   emoji: input.emoji,
                   url: input.url,
+                  note: input.note,
                   purchased: false,
                 },
                 ...l.items,

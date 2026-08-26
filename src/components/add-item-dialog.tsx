@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export function AddItemDialog({ listId, trigger }: { listId: string; trigger: ReactNode }) {
   const { addItem } = useWishlist();
@@ -23,6 +24,7 @@ export function AddItemDialog({ listId, trigger }: { listId: string; trigger: Re
   const [imageUrl, setImageUrl] = useState("");
   const [emoji, setEmoji] = useState("");
   const [url, setUrl] = useState("");
+  const [note, setNote] = useState("");
   const [fetchingImage, setFetchingImage] = useState(false);
   const [imageStatus, setImageStatus] = useState<string | null>(null);
 
@@ -32,11 +34,12 @@ export function AddItemDialog({ listId, trigger }: { listId: string; trigger: Re
     setImageUrl("");
     setEmoji("");
     setUrl("");
+    setNote("");
     setImageStatus(null);
   };
 
-  const tryFetchImage = async (candidate: string) => {
-    if (!candidate.trim() || imageUrl.trim() || fetchingImage) return;
+  const fetchImage = async (candidate: string) => {
+    if (!candidate.trim() || fetchingImage) return;
     setFetchingImage(true);
     setImageStatus(null);
     try {
@@ -64,6 +67,7 @@ export function AddItemDialog({ listId, trigger }: { listId: string; trigger: Re
       imageUrl: imageUrl.trim() || undefined,
       emoji: emoji.trim() || undefined,
       url: url.trim() || undefined,
+      note: note.trim() || undefined,
     });
     reset();
     setOpen(false);
@@ -78,7 +82,7 @@ export function AddItemDialog({ listId, trigger }: { listId: string; trigger: Re
       }}
     >
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Novo desejo</DialogTitle>
           <DialogDescription>Adicione um item a essa lista.</DialogDescription>
@@ -103,7 +107,7 @@ export function AddItemDialog({ listId, trigger }: { listId: string; trigger: Re
                 id="item-url"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                onBlur={() => tryFetchImage(url)}
+                onBlur={() => !imageUrl.trim() && fetchImage(url)}
                 placeholder="https://..."
                 type="url"
               />
@@ -113,7 +117,7 @@ export function AddItemDialog({ listId, trigger }: { listId: string; trigger: Re
                 size="icon"
                 aria-label="Buscar foto do produto"
                 disabled={!url.trim() || fetchingImage}
-                onClick={() => tryFetchImage(url)}
+                onClick={() => fetchImage(url)}
               >
                 {fetchingImage ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -122,28 +126,32 @@ export function AddItemDialog({ listId, trigger }: { listId: string; trigger: Re
                 )}
               </Button>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="item-image">Link da foto (opcional)</Label>
+            <div className="flex items-center gap-3">
+              {imageUrl && (
+                <img src={imageUrl} alt="" className="h-11 w-11 shrink-0 rounded-lg object-cover" />
+              )}
+              <Input
+                id="item-image"
+                value={imageUrl}
+                onChange={(e) => {
+                  setImageUrl(e.target.value);
+                  setImageStatus(null);
+                }}
+                placeholder="https://..."
+                type="url"
+              />
+            </div>
             <p className="text-xs text-muted-foreground">
               {fetchingImage
                 ? "Buscando a foto do produto..."
-                : imageUrl
-                  ? "Foto encontrada ✓"
-                  : (imageStatus ??
-                    "A gente tenta pegar a foto do produto sozinho a partir do link.")}
+                : (imageStatus ??
+                  "Tentamos achar a foto sozinhos a partir do link da loja — se vier errada, cole aqui a foto certa.")}
             </p>
           </div>
-
-          {imageUrl && (
-            <div className="flex items-center gap-3">
-              <img src={imageUrl} alt="" className="h-16 w-16 rounded-xl object-cover" />
-              <button
-                type="button"
-                onClick={() => setImageUrl("")}
-                className="text-xs font-medium text-muted-foreground underline"
-              >
-                Remover foto
-              </button>
-            </div>
-          )}
 
           {!imageUrl && (
             <div className="space-y-2">
@@ -167,6 +175,17 @@ export function AddItemDialog({ listId, trigger }: { listId: string; trigger: Re
               onChange={(e) => setPrice(e.target.value)}
               placeholder="R$"
               inputMode="decimal"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="item-note">Nota (opcional)</Label>
+            <Textarea
+              id="item-note"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Cor, tamanho, ou qualquer detalhe..."
+              rows={2}
             />
           </div>
 
