@@ -31,7 +31,7 @@ export type NewItemInput = {
   note: string | undefined;
 };
 
-const STORAGE_KEY = "wishlist-lists-v2";
+const STORAGE_KEY = "wishlist-lists-v3";
 
 function uid() {
   return Math.random().toString(36).slice(2, 10);
@@ -60,7 +60,9 @@ function seedLists(): WishlistList[] {
       id: uid(),
       name: itemName,
       price,
-      imageUrl: undefined,
+      // Seed data only: stable stock photos so the demo doesn't look empty.
+      // Items you add yourself use the real photo you provide.
+      imageUrl: `https://picsum.photos/seed/${encodeURIComponent(itemName)}/600/600`,
       emoji: undefined,
       url: undefined,
       note: undefined,
@@ -117,6 +119,7 @@ function seedLists(): WishlistList[] {
 }
 
 type ListPatch = Partial<Pick<WishlistList, "name" | "emoji" | "description">>;
+type ItemPatch = Partial<Pick<Item, "name" | "price" | "imageUrl" | "emoji" | "url" | "note">>;
 
 type WishlistContextValue = {
   lists: WishlistList[];
@@ -129,6 +132,7 @@ type WishlistContextValue = {
   toggleShared: (id: string) => void;
   togglePinned: (id: string) => void;
   addItem: (listId: string, input: NewItemInput) => void;
+  updateItem: (listId: string, itemId: string, patch: ItemPatch) => void;
   toggleItemPurchased: (listId: string, itemId: string) => void;
   removeItem: (listId: string, itemId: string) => void;
 };
@@ -211,6 +215,15 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       ),
     );
 
+  const updateItem = (listId: string, itemId: string, patch: ItemPatch) =>
+    setLists((current) =>
+      current.map((l) =>
+        l.id === listId
+          ? { ...l, items: l.items.map((i) => (i.id === itemId ? { ...i, ...patch } : i)) }
+          : l,
+      ),
+    );
+
   const toggleItemPurchased = (listId: string, itemId: string) =>
     setLists((current) =>
       current.map((l) =>
@@ -243,6 +256,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         toggleShared,
         togglePinned,
         addItem,
+        updateItem,
         toggleItemPurchased,
         removeItem,
       }}

@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { motion } from "motion/react";
-import { ArrowLeft, Check, ExternalLink, Store, Tag, Trash2 } from "lucide-react";
+import { ArrowLeft, Check, ExternalLink, Pencil, Store, Tag, Trash2 } from "lucide-react";
 import { useWishlist } from "@/lib/wishlist-store";
 import { formatPrice } from "@/lib/format";
 import { ItemVisual } from "@/components/item-visual";
+import { AddItemDialog } from "@/components/add-item-dialog";
 import { Button } from "@/components/ui/button";
 
 function storeDomain(url: string) {
@@ -25,6 +27,7 @@ export function ProductDetailSheet({
   onSelectItem: (itemId: string) => void;
 }) {
   const { getList, getItem, toggleItemPurchased, removeItem } = useWishlist();
+  const [editOpen, setEditOpen] = useState(false);
   const list = getList(listId);
   const item = getItem(listId, itemId);
 
@@ -56,18 +59,30 @@ export function ProductDetailSheet({
           <Button variant="ghost" size="icon" onClick={onClose} aria-label="Voltar">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Remover item"
-            onClick={() => {
-              removeItem(listId, item.id);
-              onClose();
-            }}
-          >
-            <Trash2 className="h-4 w-4 text-destructive" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Editar item"
+              onClick={() => setEditOpen(true)}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Remover item"
+              onClick={() => {
+                removeItem(listId, item.id);
+                onClose();
+              }}
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
         </header>
+
+        <AddItemDialog listId={listId} editItem={item} open={editOpen} onOpenChange={setEditOpen} />
 
         <div className="flex-1 overflow-y-auto px-5 pb-32 pt-2">
           <ItemVisual

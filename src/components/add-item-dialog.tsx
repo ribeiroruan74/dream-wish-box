@@ -1,6 +1,6 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Loader2, Search } from "lucide-react";
-import { useWishlist } from "@/lib/wishlist-store";
+import { useWishlist, type Item } from "@/lib/wishlist-store";
 import { fetchProductImage } from "@/lib/fetch-product-image";
 import {
   Dialog,
@@ -16,9 +16,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-export function AddItemDialog({ listId, trigger }: { listId: string; trigger: ReactNode }) {
-  const { addItem } = useWishlist();
-  const [open, setOpen] = useState(false);
+type Props = {
+  listId: string;
+  trigger?: ReactNode;
+  editItem?: Item;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+};
+
+export function AddItemDialog({ listId, trigger, editItem, open, onOpenChange }: Props) {
+  const { addItem, updateItem } = useWishlist();
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = open ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
+
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -29,14 +40,20 @@ export function AddItemDialog({ listId, trigger }: { listId: string; trigger: Re
   const [imageStatus, setImageStatus] = useState<string | null>(null);
 
   const reset = () => {
-    setName("");
-    setPrice("");
-    setImageUrl("");
-    setEmoji("");
-    setUrl("");
-    setNote("");
+    setName(editItem?.name ?? "");
+    setPrice(editItem?.price != null ? String(editItem.price) : "");
+    setImageUrl(editItem?.imageUrl ?? "");
+    setEmoji(editItem?.emoji ?? "");
+    setUrl(editItem?.url ?? "");
+    setNote(editItem?.note ?? "");
     setImageStatus(null);
   };
+
+  // Re-fill the form whenever it opens, so a stale draft never leaks between items.
+  useEffect(() => {
+    if (isOpen) reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, editItem?.id]);
 
   const fetchImage = async (candidate: string) => {
     if (!candidate.trim() || fetchingImage) return;
@@ -61,31 +78,31 @@ export function AddItemDialog({ listId, trigger }: { listId: string; trigger: Re
     event.preventDefault();
     if (!name.trim()) return;
     const parsedPrice = price.trim() ? Number(price.replace(",", ".")) : undefined;
-    addItem(listId, {
+    const payload = {
       name: name.trim(),
       price: Number.isFinite(parsedPrice) ? parsedPrice : undefined,
       imageUrl: imageUrl.trim() || undefined,
       emoji: emoji.trim() || undefined,
       url: url.trim() || undefined,
       note: note.trim() || undefined,
-    });
-    reset();
+    };
+    if (editItem) {
+      updateItem(listId, editItem.id, payload);
+    } else {
+      addItem(listId, payload);
+    }
     setOpen(false);
   };
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => {
-        setOpen(next);
-        if (!next) reset();
-      }}
-    >
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={setOpen}>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Novo desejo</DialogTitle>
-          <DialogDescription>Adicione um item a essa lista.</DialogDescription>
+          <DialogTitle>{editItem ? "Editar desejo" : "Novo desejo"}</DialogTitle>
+          <DialogDescription>
+            {editItem ? "Atualize as informações desse item." : "Adicione um item a essa lista."}
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -190,7 +207,7 @@ export function AddItemDialog({ listId, trigger }: { listId: string; trigger: Re
           </div>
 
           <DialogFooter>
-            <Button type="submit">Adicionar</Button>
+            <Button type="submit">{editItem ? "Salvar" : "Adicionar"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
