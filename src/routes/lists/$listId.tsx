@@ -1,16 +1,44 @@
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { AnimatePresence, LayoutGroup } from "motion/react";
-import { ArrowLeft, Pencil, Plus, Star, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowUpDown, Pencil, Plus, Star, Trash2 } from "lucide-react";
 import { RequireProfile } from "@/components/require-profile";
 import { AddItemDialog } from "@/components/add-item-dialog";
 import { ProductDetailSheet } from "@/components/product-detail-sheet";
 import { ItemVisual } from "@/components/item-visual";
-import { useWishlist } from "@/lib/wishlist-store";
+import { useWishlist, type Item } from "@/lib/wishlist-store";
 import { formatPrice } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+const SORT_OPTIONS = {
+  recent: "Mais recentes",
+  "price-asc": "Preço: menor primeiro",
+  "price-desc": "Preço: maior primeiro",
+  name: "Nome (A-Z)",
+} as const;
+
+type SortKey = keyof typeof SORT_OPTIONS;
+
+function sortItems(items: Item[], sortBy: SortKey): Item[] {
+  if (sortBy === "recent") return items;
+  const sorted = [...items];
+  if (sortBy === "price-asc") sorted.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
+  else if (sortBy === "price-desc")
+    sorted.sort((a, b) => (b.price ?? -Infinity) - (a.price ?? -Infinity));
+  else sorted.sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+  return sorted;
+}
 
 export const Route = createFileRoute("/lists/$listId")({
   head: () => ({
@@ -30,6 +58,7 @@ function ListDetailPage() {
   const navigate = useNavigate();
   const { getList, hydrated, updateList, togglePinned, removeList } = useWishlist();
   const [active, setActive] = useState<(typeof filters)[number]>("Todos");
+  const [sortBy, setSortBy] = useState<SortKey>("recent");
   const [openItemId, setOpenItemId] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
@@ -48,9 +77,13 @@ function ListDetailPage() {
     );
   }
 
-  const visibleItems = list.items.filter((item) =>
+  const filteredItems = list.items.filter((item) =>
     active === "Todos" ? true : active === "Comprados" ? item.purchased : !item.purchased,
   );
+  const visibleItems = sortItems(filteredItems, sortBy);
+
+  const total = list.items.reduce((sum, i) => sum + (i.price ?? 0), 0);
+  const pending = list.items.reduce((sum, i) => sum + (i.purchased ? 0 : (i.price ?? 0)), 0);
 
   const startEditing = () => {
     setNameDraft(list.name);
@@ -146,20 +179,57 @@ function ListDetailPage() {
             </>
           )}
 
-          <div className="mt-6 flex gap-2">
-            {filters.map((f) => (
-              <button
-                key={f}
-                onClick={() => setActive(f)}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                  active === f
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-accent"
-                }`}
-              >
-                {f}
-              </button>
-            ))}
+          {total > 0 && (
+            <div className="mt-5 flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
+              <div>
+                <p className="text-xs text-muted-foreground">Valor da coleção</p>
+                <p className="text-lg font-bold text-foreground">{formatPrice(total)}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground">Falta comprar</p>
+                <p className="text-sm font-semibold text-foreground">{formatPrice(pending)}</p>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-6 flex items-center justify-between gap-2">
+            <div className="flex flex-wrap gap-2">
+              {filters.map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setActive(f)}
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                    active === f
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-accent"
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="Ordenar itens">
+                  <ArrowUpDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Ordenar por</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup
+                  value={sortBy}
+                  onValueChange={(v) => setSortBy(v as SortKey)}
+                >
+                  {Object.entries(SORT_OPTIONS).map(([key, label]) => (
+                    <DropdownMenuRadioItem key={key} value={key}>
+                      {label}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           <section className="mt-6 grid grid-cols-2 gap-4">

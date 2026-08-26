@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { ProfileProvider } from "@/lib/profile-store";
 import { WishlistProvider } from "@/lib/wishlist-store";
+import { Toaster } from "@/components/ui/sonner";
 
 const THEME_INIT_SCRIPT = `
 try {
@@ -144,6 +145,7 @@ function RootComponent() {
           <WishlistProvider>
             {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
             <Outlet />
+            <Toaster position="bottom-center" />
           </WishlistProvider>
         </ProfileProvider>
       </ThemeProvider>

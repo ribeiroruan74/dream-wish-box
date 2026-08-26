@@ -61,11 +61,12 @@ export function AddItemDialog({ listId, trigger, editItem, open, onOpenChange }:
     setImageStatus(null);
     try {
       const result = await fetchProductImage({ data: candidate.trim() });
-      if (result.imageUrl) {
-        setImageUrl(result.imageUrl);
+      if (result.imageUrl) setImageUrl(result.imageUrl);
+      if (result.price != null && !price.trim()) setPrice(String(result.price));
+      if (result.imageUrl || result.price != null) {
         setImageStatus(null);
       } else {
-        setImageStatus(result.error ?? "Não achei uma foto nessa página");
+        setImageStatus(result.error ?? "Não achei foto nem preço nessa página");
       }
     } catch {
       setImageStatus("Não consegui acessar esse link");
@@ -132,7 +133,7 @@ export function AddItemDialog({ listId, trigger, editItem, open, onOpenChange }:
                 type="button"
                 variant="secondary"
                 size="icon"
-                aria-label="Buscar foto do produto"
+                aria-label="Buscar foto e preço do produto"
                 disabled={!url.trim() || fetchingImage}
                 onClick={() => fetchImage(url)}
               >
@@ -164,9 +165,9 @@ export function AddItemDialog({ listId, trigger, editItem, open, onOpenChange }:
             </div>
             <p className="text-xs text-muted-foreground">
               {fetchingImage
-                ? "Buscando a foto do produto..."
+                ? "Buscando foto e preço..."
                 : (imageStatus ??
-                  "Tentamos achar a foto sozinhos a partir do link da loja — se vier errada, cole aqui a foto certa.")}
+                  "Tentamos achar a foto e o preço sozinhos a partir do link da loja — se vier errado, corrija aqui.")}
             </p>
           </div>
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "motion/react";
+import { toast } from "sonner";
 import { ArrowLeft, Check, ExternalLink, Pencil, Store, Tag, Trash2 } from "lucide-react";
 import { useWishlist } from "@/lib/wishlist-store";
 import { formatPrice } from "@/lib/format";
@@ -26,7 +27,7 @@ export function ProductDetailSheet({
   onClose: () => void;
   onSelectItem: (itemId: string) => void;
 }) {
-  const { getList, getItem, toggleItemPurchased, removeItem } = useWishlist();
+  const { getList, getItem, toggleItemPurchased, removeItem, restoreItem } = useWishlist();
   const [editOpen, setEditOpen] = useState(false);
   const list = getList(listId);
   const item = getItem(listId, itemId);
@@ -75,6 +76,12 @@ export function ProductDetailSheet({
               onClick={() => {
                 removeItem(listId, item.id);
                 onClose();
+                toast(`"${item.name}" removido`, {
+                  action: {
+                    label: "Desfazer",
+                    onClick: () => restoreItem(listId, item),
+                  },
+                });
               }}
             >
               <Trash2 className="h-4 w-4 text-destructive" />

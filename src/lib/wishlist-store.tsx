@@ -135,6 +135,7 @@ type WishlistContextValue = {
   updateItem: (listId: string, itemId: string, patch: ItemPatch) => void;
   toggleItemPurchased: (listId: string, itemId: string) => void;
   removeItem: (listId: string, itemId: string) => void;
+  restoreItem: (listId: string, item: Item) => void;
 };
 
 const WishlistContext = createContext<WishlistContextValue | undefined>(undefined);
@@ -243,6 +244,11 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       ),
     );
 
+  const restoreItem = (listId: string, item: Item) =>
+    setLists((current) =>
+      current.map((l) => (l.id === listId ? { ...l, items: [item, ...l.items] } : l)),
+    );
+
   return (
     <WishlistContext.Provider
       value={{
@@ -259,6 +265,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         updateItem,
         toggleItemPurchased,
         removeItem,
+        restoreItem,
       }}
     >
       {children}
