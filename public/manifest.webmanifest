@@ -1,6 +1,6 @@
 {
-  "name": "Wishlist",
-  "short_name": "Wishlist",
+  "name": "My Wishlist",
+  "short_name": "My Wishlist",
   "description": "Organize seus desejos em listas: presentes, viagens, tecnologia e mais.",
   "start_url": "/",
   "scope": "/",

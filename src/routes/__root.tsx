@@ -10,6 +10,17 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import { ThemeProvider } from "@/lib/theme-provider";
+import { ProfileProvider } from "@/lib/profile-store";
+import { WishlistProvider } from "@/lib/wishlist-store";
+
+const THEME_INIT_SCRIPT = `
+try {
+  var stored = localStorage.getItem("wishlist-theme");
+  var dark = stored === "dark" || (stored !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  if (dark) document.documentElement.classList.add("dark");
+} catch (e) {}
+`;
 
 function NotFoundComponent() {
   return (
@@ -73,9 +84,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Wishlist" },
+      { title: "My Wishlist" },
       { name: "description", content: "Organize seus desejos em listas." },
-      { property: "og:title", content: "Wishlist" },
+      { property: "og:title", content: "My Wishlist" },
       { property: "og:description", content: "Organize seus desejos em listas." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -83,7 +94,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
-      { name: "apple-mobile-web-app-title", content: "Wishlist" },
+      { name: "apple-mobile-web-app-title", content: "My Wishlist" },
     ],
     links: [
       {
@@ -103,9 +114,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR" suppressHydrationWarning>
       <head>
         <HeadContent />
+        {/* eslint-disable-next-line react/no-danger -- sets the theme class before first paint to avoid a flash */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body>
         {children}
@@ -126,8 +139,14 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <ThemeProvider>
+        <ProfileProvider>
+          <WishlistProvider>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </WishlistProvider>
+        </ProfileProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
