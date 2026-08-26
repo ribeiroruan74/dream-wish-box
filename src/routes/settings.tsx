@@ -44,7 +44,7 @@ function SettingsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background px-5 pb-28 pt-8 sm:px-8">
+    <main className="min-h-screen animate-in bg-background px-5 pb-28 pt-8 fade-in duration-500 ease-out sm:px-8">
       <div className="mx-auto w-full max-w-2xl">
         <header className="flex items-center gap-3">
           <Button

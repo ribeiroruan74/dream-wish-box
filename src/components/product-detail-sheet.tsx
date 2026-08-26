@@ -1,7 +1,7 @@
 import { ArrowLeft, Check, ExternalLink, Trash2 } from "lucide-react";
 import { useWishlist } from "@/lib/wishlist-store";
 import { formatPrice } from "@/lib/format";
-import { placeholderGradient } from "@/lib/placeholder";
+import { ItemVisual } from "@/components/item-visual";
 import { Button } from "@/components/ui/button";
 
 export function ProductDetailSheet({
@@ -19,7 +19,7 @@ export function ProductDetailSheet({
   if (!item) return null;
 
   return (
-    <div className="fixed inset-0 z-30 flex flex-col bg-background">
+    <div className="fixed inset-0 z-30 flex animate-in flex-col bg-background slide-in-from-bottom-6 fade-in duration-300 ease-out">
       <header className="flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
         <Button variant="ghost" size="icon" onClick={onClose} aria-label="Voltar">
           <ArrowLeft className="h-5 w-5" />
@@ -40,15 +40,8 @@ export function ProductDetailSheet({
       <div className="flex-1 overflow-y-auto px-5 pb-32 pt-4">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">{item.name}</h1>
 
-        <div
-          className="mt-5 flex aspect-square w-full items-center justify-center overflow-hidden rounded-3xl border border-border"
-          style={item.imageUrl ? undefined : placeholderGradient(item.id)}
-        >
-          {item.imageUrl ? (
-            <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <span className="text-6xl opacity-70">🎁</span>
-          )}
+        <div className="mt-5 aspect-square w-full overflow-hidden rounded-3xl border border-border shadow-sm">
+          <ItemVisual item={item} emojiSize="text-6xl" />
         </div>
 
         {formatPrice(item.price) && (

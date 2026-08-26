@@ -1,5 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from "react";
+import { Loader2, Search } from "lucide-react";
 import { useWishlist } from "@/lib/wishlist-store";
+import { fetchProductImage } from "@/lib/fetch-product-image";
 import {
   Dialog,
   DialogContent,
@@ -19,13 +21,37 @@ export function AddItemDialog({ listId, trigger }: { listId: string; trigger: Re
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [emoji, setEmoji] = useState("");
   const [url, setUrl] = useState("");
+  const [fetchingImage, setFetchingImage] = useState(false);
+  const [imageStatus, setImageStatus] = useState<string | null>(null);
 
   const reset = () => {
     setName("");
     setPrice("");
     setImageUrl("");
+    setEmoji("");
     setUrl("");
+    setImageStatus(null);
+  };
+
+  const tryFetchImage = async (candidate: string) => {
+    if (!candidate.trim() || imageUrl.trim() || fetchingImage) return;
+    setFetchingImage(true);
+    setImageStatus(null);
+    try {
+      const result = await fetchProductImage({ data: candidate.trim() });
+      if (result.imageUrl) {
+        setImageUrl(result.imageUrl);
+        setImageStatus(null);
+      } else {
+        setImageStatus(result.error ?? "Não achei uma foto nessa página");
+      }
+    } catch {
+      setImageStatus("Não consegui acessar esse link");
+    } finally {
+      setFetchingImage(false);
+    }
   };
 
   const handleSubmit = (event: FormEvent) => {
@@ -36,6 +62,7 @@ export function AddItemDialog({ listId, trigger }: { listId: string; trigger: Re
       name: name.trim(),
       price: Number.isFinite(parsedPrice) ? parsedPrice : undefined,
       imageUrl: imageUrl.trim() || undefined,
+      emoji: emoji.trim() || undefined,
       url: url.trim() || undefined,
     });
     reset();
@@ -68,6 +95,70 @@ export function AddItemDialog({ listId, trigger }: { listId: string; trigger: Re
               required
             />
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="item-url">Link da loja (opcional)</Label>
+            <div className="flex gap-2">
+              <Input
+                id="item-url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                onBlur={() => tryFetchImage(url)}
+                placeholder="https://..."
+                type="url"
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                size="icon"
+                aria-label="Buscar foto do produto"
+                disabled={!url.trim() || fetchingImage}
+                onClick={() => tryFetchImage(url)}
+              >
+                {fetchingImage ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Search className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {fetchingImage
+                ? "Buscando a foto do produto..."
+                : imageUrl
+                  ? "Foto encontrada ✓"
+                  : (imageStatus ??
+                    "A gente tenta pegar a foto do produto sozinho a partir do link.")}
+            </p>
+          </div>
+
+          {imageUrl && (
+            <div className="flex items-center gap-3">
+              <img src={imageUrl} alt="" className="h-16 w-16 rounded-xl object-cover" />
+              <button
+                type="button"
+                onClick={() => setImageUrl("")}
+                className="text-xs font-medium text-muted-foreground underline"
+              >
+                Remover foto
+              </button>
+            </div>
+          )}
+
+          {!imageUrl && (
+            <div className="space-y-2">
+              <Label htmlFor="item-emoji">Emoji (opcional, se não tiver foto)</Label>
+              <Input
+                id="item-emoji"
+                value={emoji}
+                onChange={(e) => setEmoji(e.target.value)}
+                placeholder="🎁"
+                maxLength={2}
+                className="w-20 text-center text-lg"
+              />
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="item-price">Preço (opcional)</Label>
             <Input
@@ -78,24 +169,7 @@ export function AddItemDialog({ listId, trigger }: { listId: string; trigger: Re
               inputMode="decimal"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="item-image">Link da foto (opcional)</Label>
-            <Input
-              id="item-image"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://..."
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="item-url">Link da loja (opcional)</Label>
-            <Input
-              id="item-url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://..."
-            />
-          </div>
+
           <DialogFooter>
             <Button type="submit">Adicionar</Button>
           </DialogFooter>

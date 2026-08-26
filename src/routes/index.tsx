@@ -53,30 +53,31 @@ function isDone(list: WishlistList) {
 
 function ListRow({
   list,
+  index,
   onOpenItem,
 }: {
   list: WishlistList;
+  index: number;
   onOpenItem: (itemId: string) => void;
 }) {
-  const { profile } = useProfile();
   const { toggleShared } = useWishlist();
 
   return (
-    <section>
+    <section
+      style={{ animationDelay: `${Math.min(index, 6) * 60}ms` }}
+      className="animate-in fade-in slide-in-from-bottom-3 duration-500 ease-out"
+    >
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-base ring-2 ring-background">
-            {profile?.avatar}
-          </div>
-          {list.pinned && (
-            <span className="text-sm" aria-hidden>
-              📌
-            </span>
-          )}
-        </div>
+        {list.pinned ? (
+          <span className="text-sm" aria-hidden>
+            📌
+          </span>
+        ) : (
+          <span />
+        )}
         <button
           onClick={() => toggleShared(list.id)}
-          className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+          className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all active:scale-95 ${
             list.shared ? "bg-cta text-cta-foreground" : "bg-muted text-muted-foreground"
           }`}
         >
@@ -96,14 +97,14 @@ function ListRow({
         <span className="text-sm text-muted-foreground">{list.items.length}</span>
       </Link>
 
-      <div className="-mx-5 mt-3 flex gap-3 overflow-x-auto px-5 pb-1 sm:-mx-8 sm:px-8">
+      <div className="no-scrollbar -mx-5 mt-3 flex gap-3 overflow-x-auto px-5 pb-1 sm:-mx-8 sm:px-8">
         {list.items.map((item) => (
           <ItemThumb key={item.id} item={item} size="sm" onClick={() => onOpenItem(item.id)} />
         ))}
         <Link
           to="/lists/$listId"
           params={{ listId: list.id }}
-          className="flex h-28 w-16 shrink-0 items-center justify-center rounded-2xl border border-dashed border-border text-muted-foreground"
+          className="flex h-28 w-16 shrink-0 items-center justify-center rounded-2xl border border-dashed border-border text-muted-foreground transition-transform active:scale-95"
           aria-label="Ver lista completa"
         >
           <ChevronRight className="h-5 w-5" />
@@ -118,14 +119,14 @@ function NewListDialog() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [emoji, setEmoji] = useState("🎁");
+  const [emoji, setEmoji] = useState("");
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (!name.trim()) return;
-    const created = addList(name.trim(), emoji.trim());
+    const created = addList(name.trim(), emoji.trim() || undefined);
     setName("");
-    setEmoji("🎁");
+    setEmoji("");
     setOpen(false);
     navigate({ to: "/lists/$listId", params: { listId: created.id } });
   };
@@ -134,7 +135,7 @@ function NewListDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 rounded-full bg-cta px-6 py-3 text-sm font-semibold text-cta-foreground shadow-folder"
+        className="flex items-center gap-2 rounded-full bg-cta px-6 py-3 text-sm font-semibold text-cta-foreground shadow-folder transition-transform active:scale-95"
       >
         <Plus className="h-4 w-4" />
         New Wishlist
@@ -149,12 +150,13 @@ function NewListDialog() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex gap-2">
             <div className="w-20 space-y-2">
-              <Label htmlFor="new-list-emoji">Emoji</Label>
+              <Label htmlFor="new-list-emoji">Emoji (opcional)</Label>
               <Input
                 id="new-list-emoji"
                 value={emoji}
                 onChange={(e) => setEmoji(e.target.value)}
                 maxLength={2}
+                placeholder="🎁"
                 className="text-center text-lg"
               />
             </div>
@@ -198,7 +200,7 @@ function Index() {
   return (
     <main className="min-h-screen bg-background px-5 pb-32 pt-[calc(env(safe-area-inset-top)+1.5rem)] sm:px-8">
       <div className="mx-auto w-full max-w-2xl">
-        <header className="flex items-start justify-between">
+        <header className="flex animate-in items-start justify-between fade-in slide-in-from-top-2 duration-500 ease-out">
           <div>
             <p className="text-sm text-muted-foreground">Olá, {profile?.name?.split(" ")[0]} 👋</p>
             <h1 className="text-4xl font-bold tracking-tight text-foreground">My Wishlist</h1>
@@ -207,7 +209,7 @@ function Index() {
             <button
               aria-label="Alternar tema"
               onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-              className="rounded-xl border border-border p-2 text-foreground transition-colors hover:bg-muted"
+              className="rounded-xl border border-border p-2 text-foreground transition-transform active:scale-90"
             >
               {resolvedTheme === "dark" ? (
                 <Sun className="h-5 w-5" />
@@ -218,7 +220,7 @@ function Index() {
             <Link
               to="/settings"
               aria-label="Ajustes"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-lg"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-lg transition-transform active:scale-90"
             >
               {profile?.avatar}
             </Link>
@@ -230,7 +232,7 @@ function Index() {
             <button
               key={f}
               onClick={() => setActive(f)}
-              className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+              className={`rounded-full px-4 py-2 text-sm font-medium transition-all active:scale-95 ${
                 active === f
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted text-muted-foreground hover:bg-accent"
@@ -242,10 +244,11 @@ function Index() {
         </div>
 
         <div className="mt-8 space-y-10">
-          {visible.map((list) => (
+          {visible.map((list, index) => (
             <ListRow
               key={list.id}
               list={list}
+              index={index}
               onOpenItem={(itemId) => setOpenItem({ listId: list.id, itemId })}
             />
           ))}

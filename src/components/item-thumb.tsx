@@ -1,5 +1,5 @@
 import type { Item } from "@/lib/wishlist-store";
-import { placeholderGradient } from "@/lib/placeholder";
+import { ItemVisual } from "@/components/item-visual";
 
 export function ItemThumb({
   item,
@@ -14,16 +14,9 @@ export function ItemThumb({
   return (
     <button
       onClick={onClick}
-      className={`relative shrink-0 overflow-hidden rounded-2xl border border-border ${dim}`}
-      style={item.imageUrl ? undefined : placeholderGradient(item.id)}
+      className={`relative shrink-0 overflow-hidden rounded-2xl border border-border transition-transform duration-200 ease-out active:scale-95 ${dim}`}
     >
-      {item.imageUrl ? (
-        <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
-      ) : (
-        <span className="flex h-full w-full items-center justify-center text-3xl opacity-70">
-          🎁
-        </span>
-      )}
+      <ItemVisual item={item} emojiSize="text-3xl" />
       {item.purchased && (
         <span className="absolute inset-x-0 bottom-0 bg-primary/90 py-0.5 text-center text-[10px] font-semibold text-primary-foreground">
           comprado

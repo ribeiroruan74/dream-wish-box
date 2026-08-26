@@ -1,13 +1,12 @@
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { ArrowLeft, Pencil, Plus, Share2, Star, Trash2, Users } from "lucide-react";
+import { ArrowLeft, Pencil, Plus, Share2, Star, Trash2 } from "lucide-react";
 import { RequireProfile } from "@/components/require-profile";
 import { AddItemDialog } from "@/components/add-item-dialog";
 import { ProductDetailSheet } from "@/components/product-detail-sheet";
-import { useProfile } from "@/lib/profile-store";
+import { ItemVisual } from "@/components/item-visual";
 import { useWishlist } from "@/lib/wishlist-store";
 import { formatPrice } from "@/lib/format";
-import { placeholderGradient } from "@/lib/placeholder";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,7 +27,6 @@ const filters = ["Todos", "Pendentes", "Comprados"] as const;
 function ListDetailPage() {
   const { listId } = useParams({ from: "/lists/$listId" });
   const navigate = useNavigate();
-  const { profile } = useProfile();
   const { getList, hydrated, updateList, toggleShared, togglePinned, removeList } = useWishlist();
   const [active, setActive] = useState<(typeof filters)[number]>("Todos");
   const [openItemId, setOpenItemId] = useState<string | null>(null);
@@ -75,7 +73,7 @@ function ListDetailPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background px-5 pb-32 pt-[calc(env(safe-area-inset-top)+1.5rem)] sm:px-8">
+    <main className="min-h-screen animate-in bg-background px-5 pb-32 pt-[calc(env(safe-area-inset-top)+1.5rem)] fade-in duration-500 ease-out sm:px-8">
       <div className="mx-auto w-full max-w-2xl">
         <header className="flex items-center justify-between">
           <Button
@@ -87,6 +85,16 @@ function ListDetailPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-1">
+            <button
+              onClick={() => togglePinned(list.id)}
+              aria-pressed={list.pinned}
+              aria-label="Fixar lista"
+              className={`rounded-full p-2 transition-colors ${
+                list.pinned ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Star className="h-4 w-4" fill={list.pinned ? "currentColor" : "none"} />
+            </button>
             <Button variant="ghost" size="icon" aria-label="Editar" onClick={startEditing}>
               <Pencil className="h-4 w-4" />
             </Button>
@@ -101,7 +109,7 @@ function ListDetailPage() {
             <Button
               size="sm"
               onClick={() => toggleShared(list.id)}
-              className={`gap-1.5 rounded-full ${
+              className={`gap-1.5 rounded-full active:scale-95 ${
                 list.shared ? "bg-cta text-cta-foreground hover:bg-cta/90" : ""
               }`}
               variant={list.shared ? undefined : "secondary"}
@@ -112,33 +120,12 @@ function ListDetailPage() {
           </div>
         </header>
 
-        <div className="mt-5 flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-lg ring-2 ring-background">
-            {profile?.avatar}
-          </div>
-          {list.shared && (
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground ring-2 ring-background">
-              <Users className="h-4 w-4" />
-            </div>
-          )}
-          <button
-            onClick={() => togglePinned(list.id)}
-            aria-pressed={list.pinned}
-            aria-label="Fixar lista"
-            className={`ml-1 rounded-full p-1.5 transition-colors ${
-              list.pinned ? "text-primary" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Star className="h-4 w-4" fill={list.pinned ? "currentColor" : "none"} />
-          </button>
-        </div>
-
         {editing ? (
-          <form onSubmit={handleSaveEdit} className="mt-4 space-y-3">
+          <form onSubmit={handleSaveEdit} className="mt-6 space-y-3">
             <Input
               value={nameDraft}
               onChange={(e) => setNameDraft(e.target.value)}
-              className="text-3xl font-bold h-auto py-2"
+              className="h-auto py-2 text-3xl font-bold"
               autoFocus
             />
             <Textarea
@@ -158,8 +145,8 @@ function ListDetailPage() {
           </form>
         ) : (
           <>
-            <h1 className="mt-4 flex items-center gap-2 text-3xl font-bold tracking-tight text-foreground">
-              <span>{list.emoji}</span>
+            <h1 className="mt-6 flex items-center gap-2 text-3xl font-bold tracking-tight text-foreground">
+              {list.emoji && <span>{list.emoji}</span>}
               {list.name}
             </h1>
             <p className="mt-1 text-muted-foreground">
@@ -185,23 +172,15 @@ function ListDetailPage() {
         </div>
 
         <section className="mt-6 grid grid-cols-2 gap-4">
-          {visibleItems.map((item) => (
+          {visibleItems.map((item, index) => (
             <button
               key={item.id}
               onClick={() => setOpenItemId(item.id)}
-              className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card text-left shadow-sm transition-transform hover:-translate-y-0.5"
+              style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
+              className="flex animate-in flex-col overflow-hidden rounded-2xl border border-border bg-card text-left shadow-sm fade-in slide-in-from-bottom-2 duration-500 ease-out active:scale-[0.97]"
             >
-              <div
-                className="relative aspect-square w-full"
-                style={item.imageUrl ? undefined : placeholderGradient(item.id)}
-              >
-                {item.imageUrl ? (
-                  <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <span className="flex h-full w-full items-center justify-center text-4xl opacity-70">
-                    🎁
-                  </span>
-                )}
+              <div className="relative aspect-square w-full">
+                <ItemVisual item={item} />
                 {item.purchased && (
                   <span className="absolute inset-x-0 bottom-0 bg-primary/90 py-1 text-center text-[11px] font-semibold text-primary-foreground">
                     comprado
@@ -227,7 +206,7 @@ function ListDetailPage() {
         <AddItemDialog
           listId={list.id}
           trigger={
-            <button className="flex items-center gap-2 rounded-full bg-cta px-6 py-3 text-sm font-semibold text-cta-foreground shadow-folder">
+            <button className="flex items-center gap-2 rounded-full bg-cta px-6 py-3 text-sm font-semibold text-cta-foreground shadow-folder transition-transform active:scale-95">
               <Plus className="h-4 w-4" />
               Add Wish
             </button>

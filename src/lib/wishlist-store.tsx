@@ -5,6 +5,7 @@ export type Item = {
   name: string;
   price: number | undefined;
   imageUrl: string | undefined;
+  emoji: string | undefined;
   url: string | undefined;
   purchased: boolean;
 };
@@ -12,7 +13,7 @@ export type Item = {
 export type WishlistList = {
   id: string;
   name: string;
-  emoji: string;
+  emoji: string | undefined;
   description: string | undefined;
   shared: boolean;
   pinned: boolean;
@@ -24,6 +25,7 @@ export type NewItemInput = {
   name: string;
   price: number | undefined;
   imageUrl: string | undefined;
+  emoji: string | undefined;
   url: string | undefined;
 };
 
@@ -57,6 +59,7 @@ function seedLists(): WishlistList[] {
       name: itemName,
       price,
       imageUrl: undefined,
+      emoji: undefined,
       url: undefined,
       purchased,
     })),
@@ -117,7 +120,7 @@ type WishlistContextValue = {
   hydrated: boolean;
   getList: (id: string) => WishlistList | undefined;
   getItem: (listId: string, itemId: string) => Item | undefined;
-  addList: (name: string, emoji: string) => WishlistList;
+  addList: (name: string, emoji: string | undefined) => WishlistList;
   updateList: (id: string, patch: ListPatch) => void;
   removeList: (id: string) => void;
   toggleShared: (id: string) => void;
@@ -155,11 +158,11 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const getItem = (listId: string, itemId: string) =>
     getList(listId)?.items.find((i) => i.id === itemId);
 
-  const addList = (name: string, emoji: string) => {
+  const addList = (name: string, emoji: string | undefined) => {
     const next: WishlistList = {
       id: uid(),
       name,
-      emoji: emoji || "📁",
+      emoji: emoji || undefined,
       description: undefined,
       shared: false,
       pinned: false,
@@ -193,6 +196,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
                   name: input.name,
                   price: input.price,
                   imageUrl: input.imageUrl,
+                  emoji: input.emoji,
                   url: input.url,
                   purchased: false,
                 },

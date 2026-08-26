@@ -35,7 +35,7 @@ function LoginPage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background px-6 py-10">
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-sm animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
         <div className="mb-10 flex flex-col items-center gap-4 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-cta text-cta-foreground shadow-folder">
             <Heart className="h-7 w-7" fill="currentColor" />
@@ -82,7 +82,7 @@ function LoginPage() {
                   type="button"
                   onClick={() => setAvatar(option)}
                   aria-pressed={avatar === option}
-                  className={`flex h-11 w-11 items-center justify-center rounded-full text-xl transition-colors ${
+                  className={`flex h-11 w-11 items-center justify-center rounded-full text-xl transition-all active:scale-90 ${
                     avatar === option ? "bg-cta text-cta-foreground" : "bg-muted hover:bg-accent"
                   }`}
                 >
@@ -95,7 +95,7 @@ function LoginPage() {
           <Button
             type="submit"
             size="lg"
-            className="h-12 w-full rounded-full bg-cta text-cta-foreground hover:bg-cta/90"
+            className="h-12 w-full rounded-full bg-cta text-cta-foreground transition-transform active:scale-[0.98] hover:bg-cta/90"
           >
             Entrar
           </Button>
