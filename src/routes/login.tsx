@@ -36,17 +36,17 @@ function LoginPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background px-6 py-10">
       <div className="w-full max-w-sm">
-        <div className="mb-8 flex flex-col items-center gap-3 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-            <Heart className="h-6 w-6" fill="currentColor" />
+        <div className="mb-10 flex flex-col items-center gap-4 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-cta text-cta-foreground shadow-folder">
+            <Heart className="h-7 w-7" fill="currentColor" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">My Wishlist</h1>
+          <h1 className="text-3xl font-black tracking-tight text-foreground">My Wishlist</h1>
           <p className="text-sm text-muted-foreground">
             Entre para organizar e compartilhar suas listas de desejos.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <Label htmlFor="name">Como podemos te chamar?</Label>
             <Input
@@ -56,6 +56,7 @@ function LoginPage() {
               placeholder="Seu nome"
               autoComplete="name"
               required
+              className="h-12 rounded-full px-5 text-base"
             />
           </div>
 
@@ -68,6 +69,7 @@ function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="voce@email.com"
               autoComplete="email"
+              className="h-12 rounded-full px-5 text-base"
             />
           </div>
 
@@ -80,10 +82,8 @@ function LoginPage() {
                   type="button"
                   onClick={() => setAvatar(option)}
                   aria-pressed={avatar === option}
-                  className={`flex h-10 w-10 items-center justify-center rounded-full text-lg transition-colors ${
-                    avatar === option
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted hover:bg-accent"
+                  className={`flex h-11 w-11 items-center justify-center rounded-full text-xl transition-colors ${
+                    avatar === option ? "bg-cta text-cta-foreground" : "bg-muted hover:bg-accent"
                   }`}
                 >
                   {option}
@@ -92,7 +92,11 @@ function LoginPage() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full" size="lg">
+          <Button
+            type="submit"
+            size="lg"
+            className="h-12 w-full rounded-full bg-cta text-cta-foreground hover:bg-cta/90"
+          >
             Entrar
           </Button>
         </form>

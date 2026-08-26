@@ -1,10 +1,16 @@
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { Check, ChevronLeft, Plus, Share2, Star, Trash2 } from "lucide-react";
+import { ArrowLeft, Pencil, Plus, Share2, Star, Trash2, Users } from "lucide-react";
 import { RequireProfile } from "@/components/require-profile";
+import { AddItemDialog } from "@/components/add-item-dialog";
+import { ProductDetailSheet } from "@/components/product-detail-sheet";
+import { useProfile } from "@/lib/profile-store";
 import { useWishlist } from "@/lib/wishlist-store";
+import { formatPrice } from "@/lib/format";
+import { placeholderGradient } from "@/lib/placeholder";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/lists/$listId")({
   head: () => ({
@@ -19,27 +25,16 @@ export const Route = createFileRoute("/lists/$listId")({
 
 const filters = ["Todos", "Pendentes", "Comprados"] as const;
 
-function formatPrice(value?: number) {
-  if (value == null) return null;
-  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
-
 function ListDetailPage() {
   const { listId } = useParams({ from: "/lists/$listId" });
   const navigate = useNavigate();
-  const {
-    getList,
-    hydrated,
-    addItem,
-    toggleItemPurchased,
-    removeItem,
-    toggleShared,
-    togglePinned,
-    removeList,
-  } = useWishlist();
+  const { profile } = useProfile();
+  const { getList, hydrated, updateList, toggleShared, togglePinned, removeList } = useWishlist();
   const [active, setActive] = useState<(typeof filters)[number]>("Todos");
-  const [newItem, setNewItem] = useState("");
-  const [newPrice, setNewPrice] = useState("");
+  const [openItemId, setOpenItemId] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+  const [descriptionDraft, setDescriptionDraft] = useState("");
 
   const list = getList(listId);
 
@@ -58,13 +53,19 @@ function ListDetailPage() {
     active === "Todos" ? true : active === "Comprados" ? item.purchased : !item.purchased,
   );
 
-  const handleAddItem = (event: FormEvent) => {
+  const startEditing = () => {
+    setNameDraft(list.name);
+    setDescriptionDraft(list.description ?? "");
+    setEditing(true);
+  };
+
+  const handleSaveEdit = (event: FormEvent) => {
     event.preventDefault();
-    if (!newItem.trim()) return;
-    const price = newPrice.trim() ? Number(newPrice.replace(",", ".")) : undefined;
-    addItem(list.id, newItem.trim(), Number.isFinite(price) ? price : undefined);
-    setNewItem("");
-    setNewPrice("");
+    updateList(list.id, {
+      name: nameDraft.trim() || list.name,
+      description: descriptionDraft.trim() || undefined,
+    });
+    setEditing(false);
   };
 
   const handleDeleteList = () => {
@@ -74,41 +75,21 @@ function ListDetailPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background px-5 pb-16 pt-8 sm:px-8">
+    <main className="min-h-screen bg-background px-5 pb-32 pt-[calc(env(safe-area-inset-top)+1.5rem)] sm:px-8">
       <div className="mx-auto w-full max-w-2xl">
-        <header className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate({ to: "/" })}
-              aria-label="Voltar"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-foreground">
-                <span>{list.emoji}</span>
-                {list.name}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {list.items.filter((i) => i.purchased).length} de {list.items.length} comprados
-              </p>
-            </div>
-          </div>
+        <header className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate({ to: "/" })}
+            aria-label="Voltar"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           <div className="flex items-center gap-1">
-            <ListActionButton
-              active={list.pinned}
-              label="Fixar"
-              onClick={() => togglePinned(list.id)}
-              icon={Star}
-            />
-            <ListActionButton
-              active={list.shared}
-              label="Compartilhada"
-              onClick={() => toggleShared(list.id)}
-              icon={Share2}
-            />
+            <Button variant="ghost" size="icon" aria-label="Editar" onClick={startEditing}>
+              <Pencil className="h-4 w-4" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -117,8 +98,75 @@ function ListDetailPage() {
             >
               <Trash2 className="h-4 w-4 text-destructive" />
             </Button>
+            <Button
+              size="sm"
+              onClick={() => toggleShared(list.id)}
+              className={`gap-1.5 rounded-full ${
+                list.shared ? "bg-cta text-cta-foreground hover:bg-cta/90" : ""
+              }`}
+              variant={list.shared ? undefined : "secondary"}
+            >
+              <Share2 className="h-3.5 w-3.5" />
+              {list.shared ? "Compartilhada" : "Share"}
+            </Button>
           </div>
         </header>
+
+        <div className="mt-5 flex items-center gap-2">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-lg ring-2 ring-background">
+            {profile?.avatar}
+          </div>
+          {list.shared && (
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground ring-2 ring-background">
+              <Users className="h-4 w-4" />
+            </div>
+          )}
+          <button
+            onClick={() => togglePinned(list.id)}
+            aria-pressed={list.pinned}
+            aria-label="Fixar lista"
+            className={`ml-1 rounded-full p-1.5 transition-colors ${
+              list.pinned ? "text-primary" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Star className="h-4 w-4" fill={list.pinned ? "currentColor" : "none"} />
+          </button>
+        </div>
+
+        {editing ? (
+          <form onSubmit={handleSaveEdit} className="mt-4 space-y-3">
+            <Input
+              value={nameDraft}
+              onChange={(e) => setNameDraft(e.target.value)}
+              className="text-3xl font-bold h-auto py-2"
+              autoFocus
+            />
+            <Textarea
+              value={descriptionDraft}
+              onChange={(e) => setDescriptionDraft(e.target.value)}
+              placeholder="Adicionar descrição..."
+              rows={2}
+            />
+            <div className="flex gap-2">
+              <Button type="submit" size="sm">
+                Salvar
+              </Button>
+              <Button type="button" size="sm" variant="ghost" onClick={() => setEditing(false)}>
+                Cancelar
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <>
+            <h1 className="mt-4 flex items-center gap-2 text-3xl font-bold tracking-tight text-foreground">
+              <span>{list.emoji}</span>
+              {list.name}
+            </h1>
+            <p className="mt-1 text-muted-foreground">
+              {list.description || "Adicionar descrição..."}
+            </p>
+          </>
+        )}
 
         <div className="mt-6 flex gap-2">
           {filters.map((f) => (
@@ -136,95 +184,64 @@ function ListDetailPage() {
           ))}
         </div>
 
-        <form onSubmit={handleAddItem} className="mt-6 flex gap-2">
-          <Input
-            value={newItem}
-            onChange={(e) => setNewItem(e.target.value)}
-            placeholder="Adicionar item..."
-            className="flex-1"
-          />
-          <Input
-            value={newPrice}
-            onChange={(e) => setNewPrice(e.target.value)}
-            placeholder="R$"
-            inputMode="decimal"
-            className="w-24"
-          />
-          <Button type="submit" size="icon" aria-label="Adicionar item">
-            <Plus className="h-4 w-4" />
-          </Button>
-        </form>
-
-        <ul className="mt-6 space-y-2">
+        <section className="mt-6 grid grid-cols-2 gap-4">
           {visibleItems.map((item) => (
-            <li
+            <button
               key={item.id}
-              className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3"
+              onClick={() => setOpenItemId(item.id)}
+              className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card text-left shadow-sm transition-transform hover:-translate-y-0.5"
             >
-              <button
-                onClick={() => toggleItemPurchased(list.id, item.id)}
-                aria-pressed={item.purchased}
-                aria-label={item.purchased ? "Marcar como pendente" : "Marcar como comprado"}
-                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-colors ${
-                  item.purchased
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-input"
-                }`}
+              <div
+                className="relative aspect-square w-full"
+                style={item.imageUrl ? undefined : placeholderGradient(item.id)}
               >
-                {item.purchased && <Check className="h-3.5 w-3.5" />}
-              </button>
-              <div className="min-w-0 flex-1">
-                <p
-                  className={`truncate font-medium ${
-                    item.purchased ? "text-muted-foreground line-through" : "text-foreground"
-                  }`}
-                >
-                  {item.name}
-                </p>
-                {formatPrice(item.price) && (
-                  <p className="text-xs text-muted-foreground">{formatPrice(item.price)}</p>
+                {item.imageUrl ? (
+                  <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center text-4xl opacity-70">
+                    🎁
+                  </span>
+                )}
+                {item.purchased && (
+                  <span className="absolute inset-x-0 bottom-0 bg-primary/90 py-1 text-center text-[11px] font-semibold text-primary-foreground">
+                    comprado
+                  </span>
                 )}
               </div>
-              <button
-                onClick={() => removeItem(list.id, item.id)}
-                aria-label="Remover item"
-                className="text-muted-foreground transition-colors hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </li>
+              <div className="p-3">
+                <p className="truncate font-semibold text-foreground">{item.name}</p>
+                {formatPrice(item.price) && (
+                  <p className="text-sm text-muted-foreground">{formatPrice(item.price)}</p>
+                )}
+              </div>
+            </button>
           ))}
-        </ul>
+        </section>
 
         {visibleItems.length === 0 && (
           <p className="mt-16 text-center text-sm text-muted-foreground">Nada por aqui ainda.</p>
         )}
       </div>
-    </main>
-  );
-}
 
-function ListActionButton({
-  active,
-  label,
-  onClick,
-  icon: Icon,
-}: {
-  active: boolean;
-  label: string;
-  onClick: () => void;
-  icon: typeof Star;
-}) {
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      aria-label={label}
-      aria-pressed={active}
-      onClick={onClick}
-      className={active ? "text-primary" : "text-muted-foreground"}
-    >
-      <Icon className="h-4 w-4" fill={active ? "currentColor" : "none"} />
-    </Button>
+      <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+1.25rem)] flex justify-center">
+        <AddItemDialog
+          listId={list.id}
+          trigger={
+            <button className="flex items-center gap-2 rounded-full bg-cta px-6 py-3 text-sm font-semibold text-cta-foreground shadow-folder">
+              <Plus className="h-4 w-4" />
+              Add Wish
+            </button>
+          }
+        />
+      </div>
+
+      {openItemId && (
+        <ProductDetailSheet
+          listId={list.id}
+          itemId={openItemId}
+          onClose={() => setOpenItemId(null)}
+        />
+      )}
+    </main>
   );
 }

@@ -117,7 +117,7 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
         <HeadContent />
-        {/* eslint-disable-next-line react/no-danger -- sets the theme class before first paint to avoid a flash */}
+        {/* Sets the theme class before first paint to avoid a flash of the wrong theme. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body>

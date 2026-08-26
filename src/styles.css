@@ -63,6 +63,8 @@
 
   --color-tab-1: var(--tab-1);
   --color-tab-2: var(--tab-2);
+  --color-cta: var(--cta);
+  --color-cta-foreground: var(--cta-foreground);
   --shadow-folder: var(--shadow-folder);
   --shadow-folder-front: var(--shadow-folder-front);
   --shadow-paper: var(--shadow-paper);
@@ -95,6 +97,8 @@
   --paper: oklch(0.985 0.002 250);
   --tab-1: oklch(0.75 0.14 60);
   --tab-2: oklch(0.72 0.12 250);
+  --cta: oklch(0.72 0.16 25);
+  --cta-foreground: oklch(0.99 0 0);
   --shadow-folder: 0 18px 26px -14px oklch(0.2 0.02 260 / 0.5);
   --shadow-folder-front:
     0 14px 22px -10px oklch(0.2 0.02 260 / 0.55), inset 0 1px 0 oklch(1 0 0 / 0.28);
@@ -149,6 +153,8 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
+  --cta: oklch(0.68 0.17 22);
+  --cta-foreground: oklch(0.99 0 0);
 }
 
 @layer base {

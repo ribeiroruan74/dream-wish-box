@@ -4,6 +4,8 @@ export type Item = {
   id: string;
   name: string;
   price: number | undefined;
+  imageUrl: string | undefined;
+  url: string | undefined;
   purchased: boolean;
 };
 
@@ -11,13 +13,21 @@ export type WishlistList = {
   id: string;
   name: string;
   emoji: string;
+  description: string | undefined;
   shared: boolean;
   pinned: boolean;
   createdAt: number;
   items: Item[];
 };
 
-const STORAGE_KEY = "wishlist-lists";
+export type NewItemInput = {
+  name: string;
+  price: number | undefined;
+  imageUrl: string | undefined;
+  url: string | undefined;
+};
+
+const STORAGE_KEY = "wishlist-lists-v2";
 
 function uid() {
   return Math.random().toString(36).slice(2, 10);
@@ -29,6 +39,7 @@ function seedLists(): WishlistList[] {
   const make = (
     name: string,
     emoji: string,
+    description: string,
     ageDays: number,
     shared: boolean,
     pinned: boolean,
@@ -37,6 +48,7 @@ function seedLists(): WishlistList[] {
     id: uid(),
     name,
     emoji,
+    description,
     shared,
     pinned,
     createdAt: now - ageDays * day,
@@ -44,12 +56,14 @@ function seedLists(): WishlistList[] {
       id: uid(),
       name: itemName,
       price,
+      imageUrl: undefined,
+      url: undefined,
       purchased,
     })),
   });
 
   return [
-    make("Tecnologia", "💻", 2, true, true, [
+    make("Tecnologia", "💻", "Upgrades pro setup de trabalho.", 2, true, true, [
       ["Fone Bluetooth", 349.9, false],
       ["Teclado mecânico", 459, false],
       ["Monitor 4K", 1899, false],
@@ -57,12 +71,12 @@ function seedLists(): WishlistList[] {
       ["SSD externo", 399, false],
       ["Carregador rápido", 89.9, true],
     ]),
-    make("Viagens", "✈️", 5, true, false, [
+    make("Viagens", "✈️", "Itens pra próxima viagem.", 5, true, false, [
       ["Mala de bordo", 599, false],
       ["Fone com cancelamento de ruído", 899, false],
       ["Trava de mala", 39.9, true],
     ]),
-    make("Casa", "🛋️", 1, false, true, [
+    make("Casa", "🛋️", "Deixando a casa mais gostosa de viver.", 1, false, true, [
       ["Aspirador robô", 1299, false],
       ["Air fryer", 449, false],
       ["Jogo de panelas", 599, true],
@@ -72,7 +86,7 @@ function seedLists(): WishlistList[] {
       ["Espelho decorativo", 259, true],
       ["Organizador de armário", 89, false],
     ]),
-    make("Livros", "📚", 8, false, false, [
+    make("Livros", "📚", "Próximas leituras.", 8, false, false, [
       ["O Hobbit", 44.9, true],
       ["Sapiens", 59.9, false],
       ["Hábitos Atômicos", 39.9, true],
@@ -82,29 +96,33 @@ function seedLists(): WishlistList[] {
       ["1984", 32.9, true],
       ["Mindset", 45.9, false],
     ]),
-    make("Moda", "👟", 4, false, false, [
+    make("Moda", "👟", "Guarda-roupa novo.", 4, false, false, [
       ["Tênis branco", 399, false],
       ["Jaqueta jeans", 259, false],
       ["Óculos de sol", 189, true],
       ["Relógio", 599, false],
       ["Mochila", 219, false],
     ]),
-    make("Games", "🎮", 3, true, false, [
+    make("Games", "🎮", "Pra jogar no fim de semana.", 3, true, false, [
       ["Controle extra", 349, false],
       ["Headset gamer", 449, true],
     ]),
   ];
 }
 
+type ListPatch = Partial<Pick<WishlistList, "name" | "emoji" | "description">>;
+
 type WishlistContextValue = {
   lists: WishlistList[];
   hydrated: boolean;
   getList: (id: string) => WishlistList | undefined;
+  getItem: (listId: string, itemId: string) => Item | undefined;
   addList: (name: string, emoji: string) => WishlistList;
+  updateList: (id: string, patch: ListPatch) => void;
   removeList: (id: string) => void;
   toggleShared: (id: string) => void;
   togglePinned: (id: string) => void;
-  addItem: (listId: string, name: string, price?: number) => void;
+  addItem: (listId: string, input: NewItemInput) => void;
   toggleItemPurchased: (listId: string, itemId: string) => void;
   removeItem: (listId: string, itemId: string) => void;
 };
@@ -134,12 +152,15 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   }, [lists, hydrated]);
 
   const getList = (id: string) => lists.find((l) => l.id === id);
+  const getItem = (listId: string, itemId: string) =>
+    getList(listId)?.items.find((i) => i.id === itemId);
 
   const addList = (name: string, emoji: string) => {
     const next: WishlistList = {
       id: uid(),
       name,
       emoji: emoji || "📁",
+      description: undefined,
       shared: false,
       pinned: false,
       createdAt: Date.now(),
@@ -149,6 +170,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     return next;
   };
 
+  const updateList = (id: string, patch: ListPatch) =>
+    setLists((current) => current.map((l) => (l.id === id ? { ...l, ...patch } : l)));
+
   const removeList = (id: string) => setLists((current) => current.filter((l) => l.id !== id));
 
   const toggleShared = (id: string) =>
@@ -157,11 +181,24 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const togglePinned = (id: string) =>
     setLists((current) => current.map((l) => (l.id === id ? { ...l, pinned: !l.pinned } : l)));
 
-  const addItem = (listId: string, name: string, price?: number) =>
+  const addItem = (listId: string, input: NewItemInput) =>
     setLists((current) =>
       current.map((l) =>
         l.id === listId
-          ? { ...l, items: [{ id: uid(), name, price, purchased: false }, ...l.items] }
+          ? {
+              ...l,
+              items: [
+                {
+                  id: uid(),
+                  name: input.name,
+                  price: input.price,
+                  imageUrl: input.imageUrl,
+                  url: input.url,
+                  purchased: false,
+                },
+                ...l.items,
+              ],
+            }
           : l,
       ),
     );
@@ -191,7 +228,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
         lists,
         hydrated,
         getList,
+        getItem,
         addList,
+        updateList,
         removeList,
         toggleShared,
         togglePinned,

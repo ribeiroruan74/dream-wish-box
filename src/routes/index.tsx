@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { Moon, Plus, Sun } from "lucide-react";
-import folderImg from "@/assets/folder-opaque.png";
+import { ChevronRight, Moon, Plus, Sun } from "lucide-react";
 import { RequireProfile } from "@/components/require-profile";
 import { BottomNav } from "@/components/bottom-nav";
+import { ItemThumb } from "@/components/item-thumb";
+import { ProductDetailSheet } from "@/components/product-detail-sheet";
 import { useProfile } from "@/lib/profile-store";
 import { useTheme } from "@/lib/theme-provider";
 import { useWishlist, type WishlistList } from "@/lib/wishlist-store";
@@ -50,46 +51,65 @@ function isDone(list: WishlistList) {
   return list.items.length > 0 && list.items.every((i) => i.purchased);
 }
 
-function ListCard({ list }: { list: WishlistList }) {
-  const done = isDone(list);
+function ListRow({
+  list,
+  onOpenItem,
+}: {
+  list: WishlistList;
+  onOpenItem: (itemId: string) => void;
+}) {
+  const { profile } = useProfile();
+  const { toggleShared } = useWishlist();
+
   return (
-    <Link
-      to="/lists/$listId"
-      params={{ listId: list.id }}
-      className="group flex flex-col items-center gap-3"
-    >
-      <div className="relative mx-auto aspect-square w-full">
-        <img
-          src={folderImg}
-          alt=""
-          loading="lazy"
-          width={1024}
-          height={1024}
-          className="h-full w-full select-none object-contain opacity-80 transition-all duration-300 group-hover:-translate-y-1 group-hover:opacity-100"
-        />
-        <span className="pointer-events-none absolute inset-x-0 top-[62%] -translate-y-1/2 text-center text-[2.1rem] leading-none drop-shadow-md">
-          {list.emoji}
-        </span>
-        {list.pinned && (
-          <span className="absolute right-3 top-1 text-sm" aria-hidden>
-            📌
-          </span>
-        )}
-        {done && list.items.length > 0 && (
-          <span className="absolute left-1/2 top-1 -translate-x-1/2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
-            completa
-          </span>
-        )}
+    <section>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-base ring-2 ring-background">
+            {profile?.avatar}
+          </div>
+          {list.pinned && (
+            <span className="text-sm" aria-hidden>
+              📌
+            </span>
+          )}
+        </div>
+        <button
+          onClick={() => toggleShared(list.id)}
+          className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+            list.shared ? "bg-cta text-cta-foreground" : "bg-muted text-muted-foreground"
+          }`}
+        >
+          {list.shared ? "Compartilhada" : "Share"}
+        </button>
       </div>
 
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-semibold text-foreground">{list.name}</span>
-        <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
-          {list.items.length}
-        </span>
-        {list.shared && <span aria-label="Compartilhada">🤝</span>}
+      <Link
+        to="/lists/$listId"
+        params={{ listId: list.id }}
+        className="mt-2 flex items-center gap-1.5"
+      >
+        <h2 className="text-xl font-bold text-foreground">
+          {list.name} {list.emoji}
+        </h2>
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm text-muted-foreground">{list.items.length}</span>
+      </Link>
+
+      <div className="-mx-5 mt-3 flex gap-3 overflow-x-auto px-5 pb-1 sm:-mx-8 sm:px-8">
+        {list.items.map((item) => (
+          <ItemThumb key={item.id} item={item} size="sm" onClick={() => onOpenItem(item.id)} />
+        ))}
+        <Link
+          to="/lists/$listId"
+          params={{ listId: list.id }}
+          className="flex h-28 w-16 shrink-0 items-center justify-center rounded-2xl border border-dashed border-border text-muted-foreground"
+          aria-label="Ver lista completa"
+        >
+          <ChevronRight className="h-5 w-5" />
+        </Link>
       </div>
-    </Link>
+    </section>
   );
 }
 
@@ -98,14 +118,14 @@ function NewListDialog() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [emoji, setEmoji] = useState("📁");
+  const [emoji, setEmoji] = useState("🎁");
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (!name.trim()) return;
     const created = addList(name.trim(), emoji.trim());
     setName("");
-    setEmoji("📁");
+    setEmoji("🎁");
     setOpen(false);
     navigate({ to: "/lists/$listId", params: { listId: created.id } });
   };
@@ -113,11 +133,11 @@ function NewListDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <button
-        aria-label="Nova lista"
         onClick={() => setOpen(true)}
-        className="rounded-full bg-background p-2.5 text-foreground"
+        className="flex items-center gap-2 rounded-full bg-cta px-6 py-3 text-sm font-semibold text-cta-foreground shadow-folder"
       >
         <Plus className="h-4 w-4" />
+        New Wishlist
       </button>
       <DialogContent>
         <DialogHeader>
@@ -164,6 +184,7 @@ function Index() {
   const { lists } = useWishlist();
   const { resolvedTheme, setTheme } = useTheme();
   const [active, setActive] = useState<(typeof filters)[number]>("Todos");
+  const [openItem, setOpenItem] = useState<{ listId: string; itemId: string } | null>(null);
 
   const visible = [...lists]
     .filter((l) => {
@@ -175,7 +196,7 @@ function Index() {
     .sort((a, b) => Number(b.pinned) - Number(a.pinned) || b.createdAt - a.createdAt);
 
   return (
-    <main className="min-h-screen bg-background px-5 pb-28 pt-10 sm:px-8">
+    <main className="min-h-screen bg-background px-5 pb-32 pt-[calc(env(safe-area-inset-top)+1.5rem)] sm:px-8">
       <div className="mx-auto w-full max-w-2xl">
         <header className="flex items-start justify-between">
           <div>
@@ -220,11 +241,15 @@ function Index() {
           ))}
         </div>
 
-        <section className="mt-8 grid grid-cols-2 gap-x-6 gap-y-9 sm:grid-cols-3">
+        <div className="mt-8 space-y-10">
           {visible.map((list) => (
-            <ListCard key={list.id} list={list} />
+            <ListRow
+              key={list.id}
+              list={list}
+              onOpenItem={(itemId) => setOpenItem({ listId: list.id, itemId })}
+            />
           ))}
-        </section>
+        </div>
 
         {visible.length === 0 && (
           <p className="mt-16 text-center text-sm text-muted-foreground">Nada por aqui ainda.</p>
@@ -232,15 +257,18 @@ function Index() {
       </div>
 
       <div className="fixed inset-x-0 bottom-[4.75rem] flex justify-center">
-        <div className="flex items-center gap-1 rounded-full bg-primary p-1.5 shadow-folder">
-          <span className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-primary-foreground">
-            {lists.length} listas
-          </span>
-          <NewListDialog />
-        </div>
+        <NewListDialog />
       </div>
 
       <BottomNav />
+
+      {openItem && (
+        <ProductDetailSheet
+          listId={openItem.listId}
+          itemId={openItem.itemId}
+          onClose={() => setOpenItem(null)}
+        />
+      )}
     </main>
   );
 }
